@@ -1,5 +1,5 @@
 [
-  { "name": "1-lantern-rush.jpg", "query": "?shot=rush&seed=31" },
+  { "name": "1-lantern-rush.jpg", "query": "?shot=rush&seed=31&guide=1" },
   { "name": "2-choose-a-night.jpg", "query": "?shot=menu&seed=5" },
   { "name": "3-lantern-rush-begins.jpg", "query": "?shot=surge&seed=31" },
   { "name": "4-stall-closed.jpg", "query": "?shot=results&seed=2" }

@@ -117,7 +117,7 @@ export function drawTitle(ctx, time, best, hover) {
   ctx.fill();
   text(ctx, 'How to cook', VIEW.width / 2, y - 6, 16, '#ffd36b');
   text(ctx, 'Take raw food from a crate · cut it on a board · boil noodles, rice, buns and eggs in a pot · sear pork, mushroom and shrimp in a wok', VIEW.width / 2, y + 18, 14, '#f3e7ff', 'center', 'normal');
-  text(ctx, 'Plate the parts and serve at the pass. Gold VIP tickets pay double. WASD walk, Space use, hold F chop, or just click the stations.', VIEW.width / 2, y + 40, 14, '#f3e7ff', 'center', 'normal');
+  text(ctx, 'Plate the parts and serve at the pass. Gold VIP tickets pay double. WASD walk, Space use, hold F chop, or click the stations. G shows the guide.', VIEW.width / 2, y + 40, 14, '#f3e7ff', 'center', 'normal');
 }
 
 /** "3, 2, 1, open!" over the kitchen while the night starts. */

@@ -239,7 +239,7 @@ const STEP_TIPS = {
 
 /** A one-line tip for whatever the chef holds: where it goes next. */
 function tipFor(held, night) {
-  if (held === null) return 'WASD / arrows walk  ·  Space or E use  ·  hold F chop  ·  or click any station  ·  Esc pause  ·  M sound';
+  if (held === null) return 'WASD / arrows walk  ·  Space or E use  ·  hold F chop  ·  or click any station  ·  G guide  ·  Esc pause';
   if (held.kind === 'plate') {
     if (held.parts.length === 0) return 'An empty plate: set it on a counter and add finished parts, or carry it to a pot or wok to plate straight from it.';
     const wanted = night.orders.tickets.some((ticket) => {

@@ -7,6 +7,7 @@ import { Input } from './input.js';
 import { Night } from './night.js';
 import { Sound } from './audio.js';
 import { Effects } from './render/effects.js';
+import { drawKitchenGuide } from './render/guide.js';
 import { NightView, toKitchen } from './render/view.js';
 import { drawCountIn, drawPause, drawResults, drawRushBanner, drawTitle, titleCards } from './render/screens.js';
 import { stageShot } from './shots.js';
@@ -45,6 +46,8 @@ class Game {
     this.demo = null;
     this.demoChef = null;
     this.rushBanner = 0;
+    /** The kitchen guide's callouts, toggled with G (and shown for a first Opening Night's start). */
+    this.guide = false;
     this.sawRush = false;
     this.resultsSince = 0;
     this.lastTick = -1;
@@ -110,6 +113,7 @@ class Game {
   updatePlay(dt) {
     const input = this.input;
     const night = this.night;
+    if (input.wasPressed('KeyG')) this.guide = !this.guide;
     if (input.wasPressed('Escape', 'KeyP')) {
       this.screen = 'paused';
       sizzleFor(this.sound, null);
@@ -179,10 +183,16 @@ class Game {
     }
     const night = this.night;
     this.view.draw(ctx, night, this.effects, this.time, this.screen === 'play' ? this.hoverCell(night) : null);
+    if (this.screen === 'play' && night.phase === 'open' && this.showsGuide(night)) drawKitchenGuide(ctx, night);
     if (night.phase === 'count-in') drawCountIn(ctx, night);
     if (this.rushBanner > 0) drawRushBanner(ctx, 1 - this.rushBanner / 2.6);
     if (this.screen === 'paused') drawPause(ctx);
     if (this.screen === 'results') drawResults(ctx, night, this.time, this.resultsSince);
+  }
+
+  /** The guide is on when toggled, and for the first seconds of a cook's first Opening Night. */
+  showsGuide(night) {
+    return this.guide || (night.shiftIndex === 0 && !this.best[0] && night.elapsed < 16);
   }
 
   run() {
@@ -202,7 +212,8 @@ class Game {
   }
 
   /** Draw one still of a screenshot scene (see shots.js). */
-  shoot(name, seed) {
+  shoot(name, seed, guide = false) {
+    this.guide = guide;
     const staged = stageShot(name, seed, this.effects);
     this.time = staged.night.elapsed;
     if (staged.screen === 'title') {
@@ -238,7 +249,7 @@ canvas.height = VIEW.height;
 const game = new Game(canvas);
 const params = new URLSearchParams(location.search);
 if (params.has('shot')) {
-  game.shoot(params.get('shot'), Number(params.get('seed') ?? 1));
+  game.shoot(params.get('shot'), Number(params.get('seed') ?? 1), params.get('guide') === '1');
   document.body.dataset.shot = 'ready';
 } else {
   game.run();

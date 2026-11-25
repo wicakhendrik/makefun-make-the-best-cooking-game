@@ -73,7 +73,7 @@ function drawReadyTag(ctx, x, y, time) {
  * A plate part-way to a dish some ticket wants: which dish, and the parts it still lacks. Null for
  * anything else, so only real progress toward an order gets a tag.
  */
-function assemblyOf(night, plate) {
+export function assemblyOf(night, plate) {
   if (plate === null || plate.kind !== 'plate' || plate.parts.length === 0) return null;
   for (const ticket of night.orders.tickets) {
     const parts = RECIPES[ticket.recipe].parts;
@@ -110,7 +110,7 @@ function drawAssemblyTag(ctx, x, y, assembly) {
   });
 }
 
-function isWanted(night, plate) {
+export function isWanted(night, plate) {
   if (plate === null || plate.kind !== 'plate') return false;
   const recipe = recipeForParts(plate.parts, night.shift.menu);
   return recipe !== null && RECIPES[recipe] && night.orders.tickets.some((ticket) => ticket.recipe === recipe);
