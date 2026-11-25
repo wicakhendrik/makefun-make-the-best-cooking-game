@@ -1,6 +1,6 @@
-// The kitchen itself: the tile grid parsed from LAYOUT, what sits on each station, and the rules of
+// The kitchen itself: the tile grid parsed from a stall's layout, what sits on each station, and the rules of
 // every hand-off between the chef and a station (take, put down, plate up, chop, boil, sear, burn).
-import { CRATE_LETTERS, LAYOUT, PLATE_MAX, STATION_LETTERS, TILE, TIMING } from './config.js';
+import { CRATE_LETTERS, PLATE_MAX, STATION_LETTERS, TILE, TIMING } from './config.js';
 import { INGREDIENTS, isFinished, nextStep } from './recipes.js';
 
 export function makeFood(id) {
@@ -21,13 +21,16 @@ function isCooker(cell) {
 }
 
 export class Kitchen {
-  constructor() {
-    this.rows = LAYOUT.length;
-    this.cols = LAYOUT[0].length;
+  /** `plan` is one of the stalls in KITCHENS: its layout, start, assembly counters and look. */
+  constructor(plan) {
+    this.plan = plan;
+    const layout = plan.layout;
+    this.rows = layout.length;
+    this.cols = layout[0].length;
     this.cells = [];
     for (let row = 0; row < this.rows; row += 1) {
       for (let col = 0; col < this.cols; col += 1) {
-        const letter = LAYOUT[row][col];
+        const letter = layout[row][col];
         const cell = { col, row, type: 'floor', item: null, ingredient: null, chopping: 0 };
         if (CRATE_LETTERS[letter]) {
           cell.type = 'crate';

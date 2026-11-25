@@ -1,6 +1,12 @@
 // The order board: tickets arrive faster and wait less as the night goes on, each serve pays its
 // price plus a tip for speed and a bonus for an unbroken streak, and a ticket left too long walks.
+// In the rush some tickets come from lantern guests (VIP): they pay double but wait less.
 import { BOARD_MAX } from './config.js';
+
+/** From this share of the night on, a ticket may be a lantern guest's (VIP). */
+const VIP_FROM = 0.5;
+/** The chance that a ticket in that stretch is a VIP's, how long they wait, and what they pay. */
+const VIP = { chance: 0.3, patience: 0.7, pays: 2 };
 import { pick } from './random.js';
 import { RECIPES, recipeForParts } from './recipes.js';
 
@@ -64,8 +70,9 @@ export class OrderBoard {
       if (small.length > 0) options = small;
     }
     const recipe = pick(this.random, options.length > 0 ? options : this.shift.menu);
-    const patience = ease(this.shift.patience, pace) + RECIPES[recipe].parts.length * 4;
-    const ticket = { id: this.nextId, recipe, patience, left: patience, age: 0, shake: 0 };
+    const vip = pace >= VIP_FROM && !this.tickets.some((other) => other.vip) && this.random() < VIP.chance;
+    const patience = (ease(this.shift.patience, pace) + RECIPES[recipe].parts.length * 4) * (vip ? VIP.patience : 1);
+    const ticket = { id: this.nextId, recipe, patience, left: patience, age: 0, shake: 0, vip };
     this.nextId += 1;
     this.tickets.push(ticket);
     events.push({ type: 'ticket', ticket });
@@ -82,18 +89,22 @@ export class OrderBoard {
       for (const ticket of this.tickets) ticket.shake = 0.4;
       return null;
     }
-    const ticket = matching.reduce((best, candidate) => (candidate.left < best.left ? candidate : best));
+    // A VIP's ticket is filled first; otherwise the one closest to walking out.
+    const ticket = matching.reduce((best, candidate) => {
+      if (candidate.vip !== best.vip) return candidate.vip ? candidate : best;
+      return candidate.left < best.left ? candidate : best;
+    });
     const tip = Math.round((ticket.left / ticket.patience) * 8);
     this.streak += 1;
     this.bestStreak = Math.max(this.bestStreak, this.streak);
     const bonus = Math.min(this.streak - 1, 5);
-    const earned = RECIPES[recipe].price + tip + bonus;
+    const earned = (RECIPES[recipe].price + tip) * (ticket.vip ? VIP.pays : 1) + bonus;
     this.coins += earned;
     this.tips += tip;
     this.served += 1;
     this.servedLog.push(recipe);
     this.tickets = this.tickets.filter((candidate) => candidate !== ticket);
-    events.push({ type: 'served', ticket, earned, tip, bonus });
+    events.push({ type: 'served', ticket, earned, tip, bonus, vip: ticket.vip });
     return earned;
   }
 

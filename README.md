@@ -5,13 +5,18 @@ kitchen under the lanterns: take raw food from the crates, cut it on a board, bo
 or sear it in a wok, gather the finished parts on a plate and serve it at the pass before the
 ticket's patience runs out.
 
-- **Three nights**: Opening Night (2 dishes), Festival Crowd (4 dishes) and Lantern Rush (all 7).
-- **Seven dishes from nine ingredients**: Harbor Noodles, Lantern Pork Bun, Forest Rice,
-  Firecracker Noodles, Garden Bun, Ember Rice and Midnight Ramen. Each ingredient has its own route
-  (pork belly is cut and then seared; noodles only boil), so every ticket is a small route to plan.
+- **Three nights in three stalls**: Opening Night at the Harbor Stall (2 dishes), Festival Crowd
+  on the Bridge Market (5 dishes) and Lantern Rush at the Lantern Gate (all 10). Each stall puts
+  the crates, pots, woks and pass in different places, so each night is a new route to learn.
+- **Ten dishes from nine ingredients**: Harbor Noodles, Lantern Pork Bun, Forest Rice, Firecracker
+  Noodles, Garden Bun, Ember Rice, Midnight Ramen, Tide Fried Rice, Dragon Pork Noodles and Moon
+  Egg Bun. The same parts combine in different ways, and each ingredient has its own route (pork
+  belly is cut and then seared; noodles only boil), so every ticket is a small route to plan.
+- **VIP tickets in the rush**: from halfway through a night, a gold ticket may arrive from a
+  lantern guest. It pays double but waits less, and a VIP's plate is filled first.
 - **Pressure that grows without chores**: tickets come faster and wait less as the night goes on,
   finished food burns if it is left in the pot, and the lantern rush takes the last 40% of the night.
-- **A tight stall that reads at a glance**: an 11 by 5 kitchen where every station is a few steps
+- **Stalls that read at a glance**: each is an 11 by 5 kitchen where every station is a few steps
   from the island. A plate part-way to an order wears a tag ("2/3" and the parts it still lacks),
   a finished one a gold READY tag, and a banner swings in when the lantern rush begins.
 - **Tips and streaks**: a fast serve earns a tip, and an unbroken streak adds a bonus.

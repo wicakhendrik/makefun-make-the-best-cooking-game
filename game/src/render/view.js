@@ -118,11 +118,13 @@ function isWanted(night, plate) {
 
 export class NightView {
   constructor() {
-    this.layer = null;
+    /** The painted floor and counters of each stall, painted the first time it is drawn. */
+    this.layers = new Map();
   }
 
   draw(ctx, night, effects, time, hoverCell) {
-    if (this.layer === null) this.layer = paintKitchenLayer(night.kitchen);
+    const plan = night.kitchen.plan;
+    if (!this.layers.has(plan)) this.layers.set(plan, paintKitchenLayer(night.kitchen));
     ctx.fillStyle = '#17122b';
     ctx.fillRect(0, 0, VIEW.width, VIEW.height);
     drawPost(ctx, 0, KITCHEN_VIEW.x, time, false);
@@ -140,7 +142,7 @@ export class NightView {
     ctx.beginPath();
     ctx.rect(0, 0, width, height);
     ctx.clip();
-    ctx.drawImage(this.layer, 0, 0);
+    ctx.drawImage(this.layers.get(plan), 0, 0);
     const chef = night.chef;
     const choppingAt = chef.chopping ? chef.chopAt ?? chef.facingCell(night.kitchen) : null;
     drawStations(ctx, night.kitchen, time, choppingAt);

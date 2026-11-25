@@ -29,6 +29,7 @@ function busyness(night, autochef) {
     else score += plate.parts.length >= 2 ? 3 : 2;
   }
   const held = night.chef.held;
+  if (held !== null && held.kind === 'food' && held.burnt) score -= 6;
   if (held !== null && held.kind === 'plate' && recipeForParts(held.parts, night.shift.menu) !== null) ready = true;
   // A plate ready to serve is part of every scene; a frame without one never wins.
   score += ready ? 10 : -30;
@@ -44,6 +45,7 @@ function busyness(night, autochef) {
   score += Math.min(night.orders.tickets.length, 5) * 0.6;
   const big = night.orders.tickets.filter((ticket) => RECIPES[ticket.recipe].parts.length >= 3).length;
   score += Math.min(big, 2) * 0.3;
+  if (night.orders.tickets.some((ticket) => ticket.vip)) score += 2;
   return score;
 }
 

@@ -1,6 +1,6 @@
 // The chef: walks the floor tiles (keys steer directly; a mouse click on a station walks a
 // shortest path to it), faces a station to use it, carries one thing at a time and works the knife.
-import { CHEF, CHEF_START, TILE } from './config.js';
+import { CHEF, TILE } from './config.js';
 
 const DIRECTIONS = [
   { x: 1, y: 0 },
@@ -10,8 +10,9 @@ const DIRECTIONS = [
 ];
 
 export class Chef {
-  constructor() {
-    this.reset(CHEF_START.col * TILE, CHEF_START.row * TILE);
+  /** `start` is where the chef stands when the night opens, in tiles. */
+  constructor(start) {
+    this.reset(start.col * TILE, start.row * TILE);
   }
 
   reset(x, y) {

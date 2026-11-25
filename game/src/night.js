@@ -1,7 +1,7 @@
 // One night of service: the kitchen, the chef and the order board stepped together at a fixed
 // rate. It knows nothing of drawing or sound: what happened each step is left in `events`.
 import { Chef } from './chef.js';
-import { TIMING } from './config.js';
+import { KITCHENS, TIMING } from './config.js';
 import { Kitchen } from './kitchen.js';
 import { OrderBoard } from './orders.js';
 import { createRandom } from './random.js';
@@ -16,8 +16,8 @@ export class Night {
     this.shiftIndex = shiftIndex;
     this.shift = SHIFTS[shiftIndex];
     this.random = createRandom(seed);
-    this.kitchen = new Kitchen();
-    this.chef = new Chef();
+    this.kitchen = new Kitchen(KITCHENS[this.shift.kitchen]);
+    this.chef = new Chef(this.kitchen.plan.chef);
     this.orders = new OrderBoard(this.shift, this.random);
     this.elapsed = 0;
     this.countIn = TIMING.countIn;

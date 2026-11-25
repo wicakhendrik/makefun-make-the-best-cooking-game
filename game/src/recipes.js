@@ -35,6 +35,9 @@ export const RECIPES = {
   gardenBun: { name: 'Garden Bun', parts: ['bun', 'mushroom', 'greens'], price: 15 },
   emberRice: { name: 'Ember Rice', parts: ['rice', 'pork', 'chili'], price: 17 },
   midnightRamen: { name: 'Midnight Ramen', parts: ['noodles', 'pork', 'egg', 'greens'], price: 22 },
+  tideRice: { name: 'Tide Fried Rice', parts: ['rice', 'shrimp', 'egg'], price: 16 },
+  dragonNoodles: { name: 'Dragon Pork Noodles', parts: ['noodles', 'pork', 'chili'], price: 18 },
+  moonBun: { name: 'Moon Egg Bun', parts: ['bun', 'egg', 'greens'], price: 14 },
 };
 
 /** The recipe whose parts are exactly `parts` (any order), among `menu`; null when none is. */
@@ -49,13 +52,15 @@ export function recipeForParts(parts, menu) {
 /**
  * The three nights. `gap` is the seconds between new tickets and `patience` how long a ticket
  * waits, each easing from its first value to its second over the night: the rush grows by pace
- * alone, never by extra chores. `stars` are the coin totals for one, two and three stars.
+ * alone, never by extra chores. `stars` are the coin totals for one, two and three stars;
+ * `kitchen` is the stall in KITCHENS the night is cooked in.
  */
 export const SHIFTS = [
   {
     title: 'Opening Night',
-    blurb: 'Two dishes, a quiet alley. Learn the stations.',
+    blurb: 'Two dishes at the harbor. Learn the stations.',
     menu: ['harborNoodles', 'porkBun'],
+    kitchen: 0,
     length: 150,
     gap: [14, 9],
     patience: [70, 52],
@@ -63,8 +68,9 @@ export const SHIFTS = [
   },
   {
     title: 'Festival Crowd',
-    blurb: 'Four dishes and the lanterns are out.',
-    menu: ['harborNoodles', 'porkBun', 'forestRice', 'firecracker'],
+    blurb: 'Five dishes on the bridge market.',
+    menu: ['harborNoodles', 'porkBun', 'forestRice', 'firecracker', 'tideRice'],
+    kitchen: 1,
     length: 180,
     gap: [12, 7.5],
     patience: [68, 48],
@@ -72,11 +78,12 @@ export const SHIFTS = [
   },
   {
     title: 'Lantern Rush',
-    blurb: 'The whole menu. The whole city is hungry.',
-    menu: ['harborNoodles', 'porkBun', 'forestRice', 'firecracker', 'gardenBun', 'emberRice', 'midnightRamen'],
+    blurb: 'All ten dishes. The whole city is hungry.',
+    menu: Object.keys(RECIPES),
+    kitchen: 2,
     length: 180,
-    gap: [11, 6.5],
-    patience: [66, 44],
-    stars: [100, 200, 280],
+    gap: [12, 7.5],
+    patience: [74, 52],
+    stars: [90, 180, 260],
   },
 ];

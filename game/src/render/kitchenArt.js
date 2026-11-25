@@ -5,13 +5,8 @@ import { INGREDIENTS, isFinished, nextStep } from '../recipes.js';
 import { drawFood, drawPlate } from './foodArt.js';
 
 const COLORS = {
-  floorA: '#b7684a',
-  floorB: '#a95d41',
-  grout: '#8d4a33',
   counterTop: '#d39a62',
   counterGrain: '#bf8551',
-  counterFront: '#2c5f63',
-  counterTrim: '#1d4245',
   steel: '#c9ced3',
   steelDark: '#7d858c',
   wok: '#2b2b30',
@@ -46,15 +41,16 @@ function circle(ctx, x, y, r, fill, stroke, width = 2) {
 }
 
 function drawFloor(ctx, kitchen) {
+  const look = kitchen.plan.look;
   for (const cell of kitchen.cells) {
     const x = cell.col * TILE;
     const y = cell.row * TILE;
-    ctx.fillStyle = COLORS.grout;
+    ctx.fillStyle = look.grout;
     ctx.fillRect(x, y, TILE, TILE);
     for (let i = 0; i < 4; i += 1) {
       const tx = x + (i % 2) * 40;
       const ty = y + Math.floor(i / 2) * 40;
-      ctx.fillStyle = (Math.floor(tx / 40) + Math.floor(ty / 40)) % 2 === 0 ? COLORS.floorA : COLORS.floorB;
+      ctx.fillStyle = (Math.floor(tx / 40) + Math.floor(ty / 40)) % 2 === 0 ? look.floorA : look.floorB;
       ctx.fillRect(tx + 1, ty + 1, 38, 38);
     }
   }
@@ -63,7 +59,7 @@ function drawFloor(ctx, kitchen) {
     for (let col = 0; col <= kitchen.cols; col += 1) {
       const dx = col * TILE;
       const dy = row * TILE;
-      ctx.fillStyle = '#2f6e70';
+      ctx.fillStyle = look.inlay;
       ctx.beginPath();
       ctx.moveTo(dx, dy - 8);
       ctx.lineTo(dx + 8, dy);
@@ -107,8 +103,8 @@ function drawFloor(ctx, kitchen) {
   }
 }
 
-function drawCounterBlock(ctx, x, y) {
-  roundRect(ctx, x + 1, y + 1, TILE - 2, TILE - 2, 6, COLORS.counterFront, COLORS.counterTrim, 2);
+function drawCounterBlock(ctx, x, y, look) {
+  roundRect(ctx, x + 1, y + 1, TILE - 2, TILE - 2, 6, look.front, look.trim, 2);
   roundRect(ctx, x + 3, y + 3, TILE - 6, TILE - 16, 5, COLORS.counterTop, null);
   ctx.strokeStyle = COLORS.counterGrain;
   ctx.lineWidth = 1;
@@ -289,7 +285,7 @@ export function paintKitchenLayer(kitchen) {
   for (const cell of kitchen.stations) {
     const x = cell.col * TILE;
     const y = cell.row * TILE;
-    drawCounterBlock(ctx, x, y);
+    drawCounterBlock(ctx, x, y, kitchen.plan.look);
     if (cell.type === 'counter') drawCounterProp(ctx, x, y, cell.col * 7 + cell.row * 3);
     else if (cell.type === 'board') drawBoard(ctx, x, y);
     else if (cell.type === 'pot' || cell.type === 'wok') drawBurner(ctx, x, y);

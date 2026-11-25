@@ -1,7 +1,6 @@
 // The demo chef behind the title screen and the screenshot scenes. It plays only by clicking
 // stations, exactly as a mouse player does: it keeps three plates on the island for the three oldest
 // tickets, starts what cooks longest first, chops while pots boil, and carries full plates out.
-import { ASSEMBLY_CELLS } from './config.js';
 import { INGREDIENTS, RECIPES, isFinished, nextStep, recipeForParts } from './recipes.js';
 import { TIMING } from './config.js';
 
@@ -18,7 +17,7 @@ function nearest(chef, cells) {
 export class AutoChef {
   constructor(night) {
     this.night = night;
-    this.slots = ASSEMBLY_CELLS.map(({ col, row }) => ({ cell: night.kitchen.cell(col, row), ticketId: null }));
+    this.slots = night.kitchen.plan.assembly.map(({ col, row }) => ({ cell: night.kitchen.cell(col, row), ticketId: null }));
     this.wait = 0.4;
   }
 
@@ -52,13 +51,21 @@ export class AutoChef {
       const ticket = this.ticketOf(slot);
       if (ticket === null || !fits(ticket, this.plateOn(slot))) slot.ticketId = null;
     }
-    for (const slot of this.slots) {
+    // Plates that already hold parts choose first, so a started plate never loses its ticket to an
+    // empty one.
+    const order = [...this.slots].sort((a, b) => (this.plateOn(b)?.parts.length ?? 0) - (this.plateOn(a)?.parts.length ?? 0));
+    for (const slot of order) {
       if (slot.ticketId !== null) continue;
       const taken = new Set(this.slots.map((other) => other.ticketId));
       const plate = this.plateOn(slot);
       const ticket = tickets.find((candidate) => !taken.has(candidate.id) && fits(candidate, plate));
       if (ticket) slot.ticketId = ticket.id;
     }
+  }
+
+  /** Whether some ticket on the board could still take this plate's parts. */
+  wantedByAny(plate) {
+    return this.night.orders.tickets.some((ticket) => plate.parts.every((part) => RECIPES[ticket.recipe].parts.includes(part)));
   }
 
   /** The parts each assigned plate still lacks, as { id, slot } pairs. */
@@ -126,7 +133,7 @@ export class AutoChef {
       const ticket = this.ticketOf(slot);
       if (plate === null) continue;
       if (ticket !== null && plate.parts.length === RECIPES[ticket.recipe].parts.length) return slot.cell;
-      if (ticket === null && plate.parts.length > 0) return slot.cell;
+      if (ticket === null && plate.parts.length > 0 && !this.wantedByAny(plate)) return slot.cell;
     }
     const cookers = [...kitchen.ofType('pot'), ...kitchen.ofType('wok')];
     const burnt = cookers.find((cell) => cell.item !== null && cell.item.burnt);

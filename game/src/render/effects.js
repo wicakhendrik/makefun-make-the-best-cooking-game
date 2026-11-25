@@ -87,6 +87,7 @@ export class Effects {
         this.burst(cx, cy, 26, { speed: 200, lift: 80, life: 0.8, size: 4, gravity: 260, colors: ['#ffd36b', '#ff7f45', '#9df08f', '#7ad3ff'] });
         this.float(cx - 30, cy - 24, `+${event.earned}`, '#ffd36b', true);
         if (event.bonus > 0) this.float(cx - 30, cy + 4, `streak x${event.bonus + 1}`, '#9df08f');
+        if (event.vip) this.float(cx - 30, cy + 30, 'VIP paid double!', '#ffe9a6');
         break;
       case 'missed':
         this.shake = Math.max(this.shake, 7);

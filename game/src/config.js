@@ -42,38 +42,88 @@ export const PLATE_MAX = 4;
 export const BOARD_MAX = 5;
 
 /**
- * The kitchen, one character a tile, 11 wide and 5 tall: a tight stall where every station is a
- * few steps from the island, so the walk between them is the puzzle rather than the chore.
+ * The three stalls, one for each night, every one 11 tiles wide and 5 tall, one character a tile.
+ * Each puts the crates, cookers and pass in different places, so each night is a different route
+ * to learn, and each has a look of its own.
  *   .  floor          =  plain counter (put anything down here)
  *   K  chopping board O  stock pot (boils)        W  wok (sears)
  *   P  plate stack    S  serving pass             T  scrap bin
  *   n r b e s p g c m  ingredient crates: noodles, rice, bun dough, egg,
  *                      shrimp, pork, greens (bok choy), chili, mushroom
+ * `chef` is where the chef starts, in tiles; `assembly` the island counters the demo chef builds
+ * its plates on; `look` the floor and counter colours.
  */
-export const LAYOUT = [
-  '=O=O=W=W=P=',
-  'n.........S',
-  'r..K===K..S',
-  'b.........T',
-  '=espgcm=KP=',
+export const KITCHENS = [
+  {
+    name: 'Harbor Stall',
+    layout: [
+      '=O=O=W=W=P=',
+      'n.........S',
+      'r..K===K..S',
+      'b.........T',
+      '=espgcm=KP=',
+    ],
+    chef: { col: 5.5, row: 3.5 },
+    assembly: [
+      { col: 4, row: 2 },
+      { col: 5, row: 2 },
+      { col: 6, row: 2 },
+    ],
+    look: { floorA: '#b7684a', floorB: '#a95d41', grout: '#8d4a33', inlay: '#2f6e70', front: '#2c5f63', trim: '#1d4245' },
+  },
+  {
+    name: 'Bridge Market',
+    layout: [
+      '=OO=PSS=WW=',
+      'n.........e',
+      'r.K==.==K.s',
+      'b.........p',
+      '=g=c=m=TKP=',
+    ],
+    chef: { col: 5.5, row: 2.5 },
+    assembly: [
+      { col: 4, row: 2 },
+      { col: 6, row: 2 },
+      { col: 3, row: 2 },
+    ],
+    look: { floorA: '#7f8c91', floorB: '#738085', grout: '#566166', inlay: '#c8372d', front: '#8e2f2a', trim: '#5e1d1a' },
+  },
+  {
+    name: 'Lantern Gate',
+    layout: [
+      '=W=O=O=W=P=',
+      'S.........n',
+      'S..K=T=K..r',
+      '=.........b',
+      '=espgcmK=P=',
+    ],
+    chef: { col: 5.5, row: 3.5 },
+    assembly: [
+      { col: 4, row: 2 },
+      { col: 6, row: 2 },
+      { col: 8, row: 4 },
+    ],
+    look: { floorA: '#c49656', floorB: '#b7894b', grout: '#8a6436', inlay: '#4a3266', front: '#4a3266', trim: '#2f1f45' },
+  },
 ];
+
+const ROWS = KITCHENS[0].layout.length;
+const COLS = KITCHENS[0].layout[0].length;
 
 /**
  * Where the kitchen is drawn: its tiles are TILE pixels in the game's own units, scaled up to
- * fill the space between the order board and the hint bar, centred across the screen.
+ * fill the space between the order board and the hint bar, centred across the screen. Every
+ * stall has the same size, so one view fits them all.
  */
 const KITCHEN_HEIGHT = 720 - HUD_HEIGHT - FOOTER_HEIGHT;
 /** The stall's carved posts keep at least this much of each side of the screen. */
 const POST_WIDTH = 40;
-const KITCHEN_SCALE = Math.min(KITCHEN_HEIGHT / (LAYOUT.length * TILE), (1280 - 2 * POST_WIDTH) / (LAYOUT[0].length * TILE));
+const KITCHEN_SCALE = Math.min(KITCHEN_HEIGHT / (ROWS * TILE), (1280 - 2 * POST_WIDTH) / (COLS * TILE));
 export const KITCHEN_VIEW = {
   scale: KITCHEN_SCALE,
-  x: Math.round((1280 - LAYOUT[0].length * TILE * KITCHEN_SCALE) / 2),
-  y: HUD_HEIGHT + Math.round((KITCHEN_HEIGHT - LAYOUT.length * TILE * KITCHEN_SCALE) / 2),
+  x: Math.round((1280 - COLS * TILE * KITCHEN_SCALE) / 2),
+  y: HUD_HEIGHT + Math.round((KITCHEN_HEIGHT - ROWS * TILE * KITCHEN_SCALE) / 2),
 };
-
-/** Where the chef stands when a night opens, in tiles. */
-export const CHEF_START = { col: 5.5, row: 3.5 };
 
 export const CRATE_LETTERS = {
   n: 'noodles',
@@ -96,10 +146,3 @@ export const STATION_LETTERS = {
   S: 'pass',
   T: 'trash',
 };
-
-/** The island counters the demo chef assembles its plates on, one ticket each. */
-export const ASSEMBLY_CELLS = [
-  { col: 4, row: 2 },
-  { col: 5, row: 2 },
-  { col: 6, row: 2 },
-];

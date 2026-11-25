@@ -1,6 +1,6 @@
 // The screens around a night: the title with its three night cards, the count-in, the rush banner,
 // the pause veil and the end-of-night results with stars, takings and the dishes served.
-import { VIEW } from '../config.js';
+import { KITCHENS, VIEW } from '../config.js';
 import { RECIPES, SHIFTS } from '../recipes.js';
 import { drawPlate } from './foodArt.js';
 import { drawStar } from './hud.js';
@@ -91,17 +91,20 @@ export function drawTitle(ctx, time, best, hover) {
     panel(ctx, card.x, card.y + lifted, card.w, card.h);
     const cx = card.x + card.w / 2;
     const top = card.y + lifted;
-    text(ctx, `Night ${card.index + 1}`, cx, top + 28, 15, '#c8372d');
+    text(ctx, `Night ${card.index + 1} · ${KITCHENS[shift.kitchen].name}`, cx, top + 28, 15, '#c8372d');
     text(ctx, shift.title, cx, top + 56, 26, '#3a2418');
     text(ctx, shift.blurb, cx, top + 86, 14, '#6b4a33', 'center', 'normal');
+    // The night's menu as plates: up to five a row, smaller when the menu is long.
     const dishes = shift.menu;
-    const perRow = Math.min(dishes.length, 4);
+    const across = dishes.length > 4 ? 5 : 4;
+    const step = dishes.length > 4 ? 60 : 70;
+    const size = dishes.length > 4 ? 48 : 52;
     dishes.forEach((key, i) => {
-      const row = Math.floor(i / 4);
-      const inRow = row === 0 ? perRow : dishes.length - 4;
-      const dx = cx + (i % 4 - (inRow - 1) / 2) * 70;
-      const dy = top + 140 + row * 66;
-      drawPlate(ctx, RECIPES[key].parts, dx, dy, 52);
+      const row = Math.floor(i / across);
+      const inRow = Math.min(across, dishes.length - row * across);
+      const dx = cx + ((i % across) - (inRow - 1) / 2) * step;
+      const dy = top + 136 + row * 60;
+      drawPlate(ctx, RECIPES[key].parts, dx, dy, size);
     });
     text(ctx, `${dishes.length} dishes · ${Math.round((shift.length / 60) * 10) / 10} min · stars at ${shift.stars.join(' / ')}¢`, cx, top + 250, 13, '#6b4a33', 'center', 'normal');
     for (let s = 0; s < 3; s += 1) drawStar(ctx, cx - 34 + s * 34, top + 282, 13, (best[card.index] ?? 0) > s, true);
@@ -114,7 +117,7 @@ export function drawTitle(ctx, time, best, hover) {
   ctx.fill();
   text(ctx, 'How to cook', VIEW.width / 2, y - 6, 16, '#ffd36b');
   text(ctx, 'Take raw food from a crate · cut it on a board · boil noodles, rice, buns and eggs in a pot · sear pork, mushroom and shrimp in a wok', VIEW.width / 2, y + 18, 14, '#f3e7ff', 'center', 'normal');
-  text(ctx, 'Gather the parts on a plate and serve it at the pass. Walk with WASD, use with Space, hold F to chop, or just click the stations.', VIEW.width / 2, y + 40, 14, '#f3e7ff', 'center', 'normal');
+  text(ctx, 'Plate the parts and serve at the pass. Gold VIP tickets pay double. WASD walk, Space use, hold F chop, or just click the stations.', VIEW.width / 2, y + 40, 14, '#f3e7ff', 'center', 'normal');
 }
 
 /** "3, 2, 1, open!" over the kitchen while the night starts. */

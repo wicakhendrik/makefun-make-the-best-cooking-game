@@ -93,11 +93,22 @@ function drawTicket(ctx, ticket, x, y, time) {
   ctx.beginPath();
   ctx.roundRect(3, 4, TICKET.width, TICKET.height, 6);
   ctx.fill();
-  ctx.fillStyle = share < 0.2 ? '#ffe3d6' : '#fbf3df';
+  if (ticket.vip) {
+    // A lantern guest's ticket: gold paper with a soft glow, so it stands out on a full board.
+    ctx.shadowColor = 'rgba(255,200,80,0.9)';
+    ctx.shadowBlur = 12 + Math.sin(time * 5) * 4;
+  }
+  ctx.fillStyle = ticket.vip ? (share < 0.2 ? '#ffd9a8' : '#ffe9a6') : share < 0.2 ? '#ffe3d6' : '#fbf3df';
   ctx.beginPath();
   ctx.roundRect(0, 0, TICKET.width, TICKET.height, 6);
   ctx.fill();
-  ctx.fillStyle = '#c8372d';
+  ctx.shadowBlur = 0;
+  if (ticket.vip) {
+    ctx.strokeStyle = '#c8901e';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+  }
+  ctx.fillStyle = ticket.vip ? '#c8901e' : '#c8372d';
   ctx.fillRect(0, 0, TICKET.width, 6);
   ctx.fillStyle = '#e3b23c';
   ctx.beginPath();
@@ -105,8 +116,19 @@ function drawTicket(ctx, ticket, x, y, time) {
   ctx.fill();
 
   text(ctx, recipe.name, 8, 18, 13, '#3a2418');
-  text(ctx, `${recipe.price}¢`, TICKET.width - 8, 18, 12, '#8a5a2b', 'right');
+  text(ctx, `${recipe.price * (ticket.vip ? 2 : 1)}¢`, TICKET.width - 8, 18, 12, ticket.vip ? '#a0560e' : '#8a5a2b', 'right');
   drawPlate(ctx, recipe.parts, 34, 54, 50);
+  if (ticket.vip) {
+    // The guest's badge: pays double, waits less.
+    ctx.fillStyle = '#c8372d';
+    ctx.strokeStyle = '#ffe9a6';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(4, 70, 52, 18, 9);
+    ctx.fill();
+    ctx.stroke();
+    text(ctx, 'VIP ×2', 30, 79, 11, '#ffe9a6', 'center');
+  }
 
   recipe.parts.forEach((id, index) => {
     const px = 76 + (index % 2) * 50;
