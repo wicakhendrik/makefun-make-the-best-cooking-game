@@ -21,7 +21,10 @@ function middleOf(cells) {
   return cells[Math.floor(cells.length / 2)];
 }
 
-/** What the guide names in this frame, most important first. */
+/**
+ * What the guide names in this frame: the board and the clock, then the route one dish takes,
+ * numbered in service order (crate, stove, plate, ready, pass).
+ */
 function guideTargets(night) {
   const kitchen = night.kitchen;
   const targets = [];
@@ -30,22 +33,23 @@ function guideTargets(night) {
   targets.push({ label: 'SHIFT TIMER', x: 1046, y: 108, hud: true });
   const crates = kitchen.ofType('crate').filter((cell) => cell.row === kitchen.rows - 1);
   const crate = crates.length > 0 ? middleOf(crates) : middleOf(kitchen.ofType('crate'));
-  if (crate) targets.push({ label: 'INGREDIENTS', ...cellPoint(crate) });
+  if (crate) targets.push({ step: 1, label: 'TAKE INGREDIENTS', ...cellPoint(crate) });
+  const cooking = kitchen.stations.find((cell) => (cell.type === 'pot' || cell.type === 'wok') && cell.item !== null);
+  if (cooking) targets.push({ step: 2, label: 'CHOP · BOIL · SEAR', ...cellPoint(cooking) });
   const building = kitchen.stations.find((cell) => assemblyOf(night, cell.item) !== null);
-  if (building) targets.push({ label: 'DISH MID-ASSEMBLY', ...cellPoint(building) });
+  if (building) targets.push({ step: 3, label: 'DISH MID-ASSEMBLY', ...cellPoint(building) });
   const ready = kitchen.stations.find((cell) => isWanted(night, cell.item));
-  if (ready) targets.push({ label: 'PLATE READY TO SERVE', ...cellPoint(ready) });
+  if (ready) targets.push({ step: 4, label: 'PLATE READY TO SERVE', ...cellPoint(ready) });
   else if (isWanted(night, night.chef.held)) {
     targets.push({
+      step: 4,
       label: 'PLATE READY TO SERVE',
       x: KITCHEN_VIEW.x + night.chef.x * KITCHEN_VIEW.scale,
       y: KITCHEN_VIEW.y + night.chef.y * KITCHEN_VIEW.scale,
     });
   }
   const pass = kitchen.ofType('pass');
-  if (pass.length > 0) targets.push({ label: 'SERVE HERE', ...cellPoint(pass[0]) });
-  const cooking = kitchen.stations.find((cell) => (cell.type === 'pot' || cell.type === 'wok') && cell.item !== null);
-  if (cooking) targets.push({ label: cooking.type === 'pot' ? 'BOILING' : 'SEARING', ...cellPoint(cooking) });
+  if (pass.length > 0) targets.push({ step: 5, label: 'SERVE HERE', ...cellPoint(pass[0]) });
   return targets;
 }
 
@@ -59,7 +63,7 @@ function overlaps(a, b) {
  */
 function placeCallout(ctx, target, kitchen, placed) {
   ctx.font = FONT;
-  const w = ctx.measureText(target.label).width + 28;
+  const w = ctx.measureText(target.label).width + (target.step ? 52 : 28);
   const scale = KITCHEN_VIEW.scale;
   const rowY = (row) => KITCHEN_VIEW.y + (row * TILE + TILE / 2) * scale - PILL_HEIGHT / 2;
   const rows = target.hud ? [1] : [1, 3, 2];
@@ -67,8 +71,8 @@ function placeCallout(ctx, target, kitchen, placed) {
   const right = KITCHEN_VIEW.x + (kitchen.cols - 1) * TILE * scale - 6;
   let best = null;
   for (const row of rows) {
-    for (const shift of [0, -1, 1, -2, 2, -3, 3, -4, 4]) {
-      const x = Math.max(left, Math.min(right - w, target.x - w / 2 + shift * 70));
+    for (const shift of [0, -1, 1, -2, 2, -3, 3, -4, 4, -5, 5, -6, 6, -7, 7]) {
+      const x = Math.max(left, Math.min(right - w, target.x - w / 2 + shift * 60));
       const box = { x, y: rowY(row), w, h: PILL_HEIGHT };
       if (placed.some((other) => overlaps(box, other))) continue;
       const cost = Math.hypot(box.x + w / 2 - target.x, box.y + PILL_HEIGHT / 2 - target.y);
@@ -98,8 +102,7 @@ function drawLeader(ctx, box, target) {
   ctx.stroke();
 }
 
-function drawPill(ctx, box, label) {
-  const cx = box.x + box.w / 2;
+function drawPill(ctx, box, target) {
   const cy = box.y + box.h / 2;
   ctx.fillStyle = 'rgba(28,18,46,0.92)';
   ctx.strokeStyle = '#ffd36b';
@@ -108,11 +111,28 @@ function drawPill(ctx, box, label) {
   ctx.roundRect(box.x, box.y, box.w, box.h, 15);
   ctx.fill();
   ctx.stroke();
+  let textX = box.x + box.w / 2;
+  if (target.step) {
+    // A numbered step of the dish's route, in the lantern red of the stall.
+    ctx.fillStyle = '#e0452f';
+    ctx.strokeStyle = '#ffd36b';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(box.x + 16, cy, 12, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = '#fff3d6';
+    ctx.font = 'bold 15px "Trebuchet MS", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(target.step), box.x + 16, cy + 1);
+    textX += 12;
+  }
   ctx.fillStyle = '#ffe9b0';
   ctx.font = FONT;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(label, cx, cy + 1);
+  ctx.fillText(target.label, textX, cy + 1);
 }
 
 /** Draw the guide's callouts over a night in play. */
@@ -137,6 +157,6 @@ export function drawKitchenGuide(ctx, night) {
   // Every leader line first, then the pills on top, so no line crosses a label.
   ctx.save();
   for (const { box, target } of callouts) drawLeader(ctx, box, target);
-  for (const { box, target } of callouts) drawPill(ctx, box, target.label);
+  for (const { box, target } of callouts) drawPill(ctx, box, target);
   ctx.restore();
 }
