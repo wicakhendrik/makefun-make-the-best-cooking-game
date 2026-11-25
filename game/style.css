@@ -1,0 +1,26 @@
+/* The canvas keeps its 16:9 shape and fills as much of the window as it can. */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: #0f0b1a;
+  overflow: hidden;
+}
+
+#stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+#game {
+  width: min(100vw, calc(100vh * 16 / 9));
+  height: auto;
+  aspect-ratio: 16 / 9;
+  display: block;
+  image-rendering: auto;
+  box-shadow: 0 0 60px rgba(255, 170, 80, 0.15);
+  cursor: pointer;
+}
