@@ -11,6 +11,9 @@ ticket's patience runs out.
   (pork belly is cut and then seared; noodles only boil), so every ticket is a small route to plan.
 - **Pressure that grows without chores**: tickets come faster and wait less as the night goes on,
   finished food burns if it is left in the pot, and the lantern rush takes the last 40% of the night.
+- **A tight stall that reads at a glance**: an 11 by 5 kitchen where every station is a few steps
+  from the island. A plate part-way to an order wears a tag ("2/3" and the parts it still lacks),
+  a finished one a gold READY tag, and a banner swings in when the lantern rush begins.
 - **Tips and streaks**: a fast serve earns a tip, and an unbroken streak adds a bonus.
 - Everything (art, sounds and music) is drawn or synthesized in code. Nothing is loaded from the
   network.
@@ -36,7 +39,8 @@ node serve.ts            # then open http://localhost:8080 in desktop Chrome
 
 - `game/src/`: the game. `night.js` steps one night; `kitchen.js` holds the station rules,
   `chef.js` movement and click-to-walk paths, `orders.js` the order board, `recipes.js` the menu,
-  `autochef.js` the demo chef behind the title screen, and `render/` the drawing.
+  `autochef.js` the demo chef behind the title screen and the screenshots (it starts pot and wok
+  parts before it chops, as a good cook does), and `render/` the drawing.
 - `main.ts`: hands the entry in (copies `game/` and `screenshots/` and writes `dossier.json`).
 - `tools/simulate.mjs` plays every night headless with the demo chef, to check the pacing.
 - `tools/shoot.mjs` takes `screenshots/` with headless Chrome from the scenes in `shots.json`.

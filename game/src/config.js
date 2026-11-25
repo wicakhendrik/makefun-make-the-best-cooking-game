@@ -42,7 +42,8 @@ export const PLATE_MAX = 4;
 export const BOARD_MAX = 5;
 
 /**
- * The kitchen, one character a tile, 13 wide and 6 tall.
+ * The kitchen, one character a tile, 11 wide and 5 tall: a tight stall where every station is a
+ * few steps from the island, so the walk between them is the puzzle rather than the chore.
  *   .  floor          =  plain counter (put anything down here)
  *   K  chopping board O  stock pot (boils)        W  wok (sears)
  *   P  plate stack    S  serving pass             T  scrap bin
@@ -50,12 +51,11 @@ export const BOARD_MAX = 5;
  *                      shrimp, pork, greens (bok choy), chili, mushroom
  */
 export const LAYOUT = [
-  '=O=O=W=W=P=S=',
-  'n...........S',
-  'r...K====K..=',
-  'b...........T',
-  'e...........=',
-  '=spgcm=K==P==',
+  '=O=O=W=W=P=',
+  'n.........S',
+  'r..K===K..S',
+  'b.........T',
+  '=espgcm=KP=',
 ];
 
 /**
@@ -63,12 +63,17 @@ export const LAYOUT = [
  * fill the space between the order board and the hint bar, centred across the screen.
  */
 const KITCHEN_HEIGHT = 720 - HUD_HEIGHT - FOOTER_HEIGHT;
-const KITCHEN_SCALE = KITCHEN_HEIGHT / (LAYOUT.length * TILE);
+/** The stall's carved posts keep at least this much of each side of the screen. */
+const POST_WIDTH = 40;
+const KITCHEN_SCALE = Math.min(KITCHEN_HEIGHT / (LAYOUT.length * TILE), (1280 - 2 * POST_WIDTH) / (LAYOUT[0].length * TILE));
 export const KITCHEN_VIEW = {
   scale: KITCHEN_SCALE,
   x: Math.round((1280 - LAYOUT[0].length * TILE * KITCHEN_SCALE) / 2),
-  y: HUD_HEIGHT,
+  y: HUD_HEIGHT + Math.round((KITCHEN_HEIGHT - LAYOUT.length * TILE * KITCHEN_SCALE) / 2),
 };
+
+/** Where the chef stands when a night opens, in tiles. */
+export const CHEF_START = { col: 5.5, row: 3.5 };
 
 export const CRATE_LETTERS = {
   n: 'noodles',
@@ -92,8 +97,9 @@ export const STATION_LETTERS = {
   T: 'trash',
 };
 
-/** The island counters the demo chef assembles its two plates on. */
+/** The island counters the demo chef assembles its plates on, one ticket each. */
 export const ASSEMBLY_CELLS = [
+  { col: 4, row: 2 },
+  { col: 5, row: 2 },
   { col: 6, row: 2 },
-  { col: 7, row: 2 },
 ];

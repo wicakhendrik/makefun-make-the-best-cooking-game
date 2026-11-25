@@ -59,7 +59,7 @@ export const SHIFTS = [
     length: 150,
     gap: [14, 9],
     patience: [70, 52],
-    stars: [70, 140, 200],
+    stars: [80, 160, 240],
   },
   {
     title: 'Festival Crowd',

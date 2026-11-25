@@ -212,6 +212,12 @@ class Game {
       this.night = staged.night;
       this.screen = staged.screen;
       this.resultsSince = 3;
+      // A still taken just after the rush begins shows its banner, as play would at that moment.
+      const sinceRush = staged.night.elapsed - staged.night.shift.length * 0.6;
+      if (staged.night.rush && sinceRush < 2.6) {
+        this.sawRush = true;
+        this.rushBanner = 2.6 - sinceRush;
+      }
     }
     this.render();
   }

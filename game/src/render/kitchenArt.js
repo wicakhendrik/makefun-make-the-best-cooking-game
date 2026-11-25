@@ -58,9 +58,40 @@ function drawFloor(ctx, kitchen) {
       ctx.fillRect(tx + 1, ty + 1, 38, 38);
     }
   }
-  drawMat(ctx, TILE + 6, TILE + 10, (kitchen.cols - 3) * TILE - 12, TILE - 22, '#6b2f2a', '#8e3d33');
-  const pass = kitchen.stations.find((cell) => cell.type === 'pass' && cell.col === kitchen.cols - 1);
-  if (pass) drawMat(ctx, (pass.col - 2) * TILE + 8, pass.row * TILE + 8, 2 * TILE - 16, TILE * 2 - 16, '#2c5f63', '#3c7a7e');
+  // Little glazed diamonds set where four floor tiles meet.
+  for (let row = 0; row <= kitchen.rows; row += 1) {
+    for (let col = 0; col <= kitchen.cols; col += 1) {
+      const dx = col * TILE;
+      const dy = row * TILE;
+      ctx.fillStyle = '#2f6e70';
+      ctx.beginPath();
+      ctx.moveTo(dx, dy - 8);
+      ctx.lineTo(dx + 8, dy);
+      ctx.lineTo(dx, dy + 8);
+      ctx.lineTo(dx - 8, dy);
+      ctx.closePath();
+      ctx.fill();
+      ctx.fillStyle = '#e3b23c';
+      ctx.fillRect(dx - 2, dy - 2, 4, 4);
+    }
+  }
+  // Pools of warm light under the lanterns strung over the stall, and shade toward its corners.
+  const width = kitchen.cols * TILE;
+  const height = kitchen.rows * TILE;
+  for (let i = 0; i < 4; i += 1) {
+    const lx = (i + 0.5) * (width / 4);
+    const ly = height * (i % 2 === 0 ? 0.42 : 0.58);
+    const pool = ctx.createRadialGradient(lx, ly, 10, lx, ly, 190);
+    pool.addColorStop(0, 'rgba(255,196,120,0.32)');
+    pool.addColorStop(1, 'rgba(255,196,120,0)');
+    ctx.fillStyle = pool;
+    ctx.fillRect(lx - 190, ly - 190, 380, 380);
+  }
+  const shade = ctx.createRadialGradient(width / 2, height / 2, height * 0.4, width / 2, height / 2, width * 0.62);
+  shade.addColorStop(0, 'rgba(30,10,20,0)');
+  shade.addColorStop(1, 'rgba(30,10,20,0.35)');
+  ctx.fillStyle = shade;
+  ctx.fillRect(0, 0, width, height);
   // A floor drain by the scrap bin.
   ctx.fillStyle = '#5b3424';
   ctx.beginPath();
@@ -76,25 +107,6 @@ function drawFloor(ctx, kitchen) {
   }
 }
 
-/** A woven mat with a fringe, laid on the floor where the cooks stand longest. */
-function drawMat(ctx, x, y, w, h, base, weave) {
-  ctx.fillStyle = 'rgba(0,0,0,0.18)';
-  ctx.fillRect(x + 3, y + 4, w, h);
-  ctx.fillStyle = base;
-  ctx.fillRect(x, y, w, h);
-  ctx.strokeStyle = weave;
-  ctx.lineWidth = 3;
-  for (let i = 8; i < w; i += 12) {
-    ctx.beginPath();
-    ctx.moveTo(x + i, y + 4);
-    ctx.lineTo(x + i, y + h - 4);
-    ctx.stroke();
-  }
-  ctx.strokeStyle = '#d6a45a';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(x + 5, y + 5, w - 10, h - 10);
-}
-
 function drawCounterBlock(ctx, x, y) {
   roundRect(ctx, x + 1, y + 1, TILE - 2, TILE - 2, 6, COLORS.counterFront, COLORS.counterTrim, 2);
   roundRect(ctx, x + 3, y + 3, TILE - 6, TILE - 16, 5, COLORS.counterTop, null);
@@ -108,6 +120,56 @@ function drawCounterBlock(ctx, x, y) {
   }
   ctx.fillStyle = 'rgba(255,255,255,0.12)';
   ctx.fillRect(x + 4, y + 4, TILE - 8, 3);
+}
+
+/**
+ * The small things that live on a plain counter: a soy bottle, a jar of chopsticks, garlic, a bowl
+ * of spring onion, a folded cloth. They sit at the back corner, so food set down covers them.
+ */
+function drawCounterProp(ctx, x, y, which) {
+  const kind = which % 6;
+  if (kind === 0) {
+    roundRect(ctx, x + 10, y + 10, 12, 26, 4, '#3a1f16', '#1d0f0a', 1.5);
+    roundRect(ctx, x + 13, y + 4, 6, 8, 2, '#c8372d');
+    roundRect(ctx, x + 10, y + 20, 12, 9, 2, '#f1e3c4');
+    ctx.fillStyle = '#c8372d';
+    ctx.fillRect(x + 12, y + 23, 8, 3);
+  } else if (kind === 1) {
+    ctx.strokeStyle = '#d9b27a';
+    ctx.lineWidth = 2.5;
+    for (let i = 0; i < 5; i += 1) {
+      ctx.beginPath();
+      ctx.moveTo(x + 14 + i * 3, y + 22);
+      ctx.lineTo(x + 10 + i * 4, y + 4);
+      ctx.stroke();
+    }
+    roundRect(ctx, x + 9, y + 18, 20, 18, 4, '#3f6f8a', '#22414f', 1.5);
+    ctx.fillStyle = '#f1e3c4';
+    ctx.fillRect(x + 9, y + 25, 20, 4);
+  } else if (kind === 2) {
+    // A clay teapot.
+    roundRect(ctx, x + 26, y + 14, 8, 4, 2, '#7a3b22');
+    ctx.strokeStyle = '#7a3b22';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(x + 9, y + 22, 5, Math.PI * 0.5, Math.PI * 1.5);
+    ctx.stroke();
+    circle(ctx, x + 20, y + 24, 11, '#a8542f', '#5e2a16', 1.5);
+    circle(ctx, x + 20, y + 14, 4, '#7a3b22');
+    ctx.fillStyle = 'rgba(255,230,200,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(x + 16, y + 20, 4, 2.5, -0.5, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (kind === 3) {
+    circle(ctx, x + 20, y + 20, 12, '#f7f2e8', '#9c8f7c', 1.5);
+    circle(ctx, x + 20, y + 20, 8, '#e9f0d8');
+    for (let i = 0; i < 7; i += 1) circle(ctx, x + 15 + (i % 3) * 5, y + 16 + Math.floor(i / 3) * 4, 2, i % 2 ? '#5aa646' : '#8fd06c');
+  } else if (kind === 4) {
+    roundRect(ctx, x + 8, y + 10, 30, 18, 3, '#eef3f6', '#7f98a8', 1.5);
+    ctx.fillStyle = 'rgba(46,96,140,0.45)';
+    for (let i = 0; i < 3; i += 1) ctx.fillRect(x + 11 + i * 9, y + 10, 4, 18);
+    ctx.fillRect(x + 8, y + 16, 30, 4);
+  }
 }
 
 function drawBoard(ctx, x, y) {
@@ -161,8 +223,9 @@ function drawCrate(ctx, cell, x, y) {
   ctx.fillStyle = '#b07d48';
   for (let i = 0; i < 3; i += 1) ctx.fillRect(x + 9, y + 10 + i * 17, 62, 12);
   const raw = { id: cell.ingredient, stage: 0, burnt: false };
-  drawFood(ctx, raw, x + 28, y + 30, 30);
-  drawFood(ctx, raw, x + 50, y + 34, 30);
+  drawFood(ctx, raw, x + 26, y + 28, 36);
+  drawFood(ctx, raw, x + 54, y + 30, 36);
+  drawFood(ctx, raw, x + 40, y + 40, 38);
   roundRect(ctx, x + 12, y + 56, 56, 14, 4, '#f5ead2', '#5a3a1d', 1);
   ctx.fillStyle = '#3a2418';
   ctx.font = 'bold 10px "Trebuchet MS", sans-serif';
@@ -227,7 +290,8 @@ export function paintKitchenLayer(kitchen) {
     const x = cell.col * TILE;
     const y = cell.row * TILE;
     drawCounterBlock(ctx, x, y);
-    if (cell.type === 'board') drawBoard(ctx, x, y);
+    if (cell.type === 'counter') drawCounterProp(ctx, x, y, cell.col * 7 + cell.row * 3);
+    else if (cell.type === 'board') drawBoard(ctx, x, y);
     else if (cell.type === 'pot' || cell.type === 'wok') drawBurner(ctx, x, y);
     else if (cell.type === 'crate') drawCrate(ctx, cell, x, y);
     else if (cell.type === 'plates') drawPlateStack(ctx, x, y);
@@ -268,14 +332,27 @@ function drawPot(ctx, cell, x, y, time) {
   circle(ctx, x + 40, y + 32, 25, COLORS.steel, COLORS.steelDark, 2);
   roundRect(ctx, x + 6, y + 27, 9, 10, 3, COLORS.steelDark);
   roundRect(ctx, x + 65, y + 27, 9, 10, 3, COLORS.steelDark);
-  circle(ctx, x + 40, y + 32, 20, food !== null && food.burnt ? '#4a3d36' : '#7fb3c9');
+  if (food !== null && food.burnt) circle(ctx, x + 40, y + 32, 20, '#4a3d36');
+  else {
+    const water = ctx.createRadialGradient(x + 34, y + 26, 2, x + 40, y + 32, 20);
+    water.addColorStop(0, '#cfe9ef');
+    water.addColorStop(1, '#5f9fb5');
+    circle(ctx, x + 40, y + 32, 20, water);
+  }
+  if (!active && food === null) {
+    // Kept at a simmer between orders: a slow bubble or two.
+    for (let i = 0; i < 2; i += 1) {
+      const t = (time * 0.6 + i * 0.5 + x * 0.01) % 1;
+      circle(ctx, x + 34 + i * 12, y + 28 + i * 6, 1 + t * 2.5, `rgba(255,255,255,${0.5 * (1 - t)})`);
+    }
+  }
   if (active) {
     for (let i = 0; i < 5; i += 1) {
       const t = (time * 1.6 + i * 0.37) % 1;
       circle(ctx, x + 30 + ((i * 13) % 22), y + 26 + ((i * 7) % 14), 1.5 + t * 3, `rgba(255,255,255,${0.7 * (1 - t)})`);
     }
   }
-  if (food !== null) drawFood(ctx, food, x + 40, y + 32, 30, time);
+  if (food !== null) drawFood(ctx, food, x + 40, y + 32, 38, time);
 }
 
 function drawWok(ctx, cell, x, y, time) {
@@ -290,7 +367,7 @@ function drawWok(ctx, cell, x, y, time) {
   circle(ctx, x + 38, y + 32, 22, inner);
   if (food !== null) {
     const toss = active ? Math.sin(time * 9) * 2 : 0;
-    drawFood(ctx, food, x + 38, y + 32 + toss, 32, time);
+    drawFood(ctx, food, x + 38, y + 32 + toss, 40, time);
   }
 }
 
@@ -326,7 +403,7 @@ export function drawStations(ctx, kitchen, time, choppingAt = null) {
     else if (cell.type === 'wok') drawWok(ctx, cell, x, y, time);
     else if (cell.item !== null) {
       const spot = itemSpot(cell);
-      drawHeldThing(ctx, cell.item, spot.x, spot.y, 50, time);
+      drawHeldThing(ctx, cell.item, spot.x, spot.y, 62, time);
     }
     if (cell.type === 'board') drawKnife(ctx, x - (cell === choppingAt ? 14 : 0), y, cell === choppingAt ? Math.abs(Math.sin(time * 26)) * 12 : 0);
   }

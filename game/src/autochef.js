@@ -1,5 +1,5 @@
 // The demo chef behind the title screen and the screenshot scenes. It plays only by clicking
-// stations, exactly as a mouse player does: it keeps two plates on the island for the two oldest
+// stations, exactly as a mouse player does: it keeps three plates on the island for the three oldest
 // tickets, starts what cooks longest first, chops while pots boil, and carries full plates out.
 import { ASSEMBLY_CELLS } from './config.js';
 import { INGREDIENTS, RECIPES, isFinished, nextStep, recipeForParts } from './recipes.js';
@@ -133,6 +133,9 @@ export class AutoChef {
     if (burnt) return burnt;
     const ready = cookers.find((cell) => cell.item !== null && isFinished(cell.item) && (neededIds.has(cell.item.id) || cell.item.doneFor > TIMING.burn - TIMING.warn));
     if (ready) return ready;
+    // Anything that goes straight into a free pot or wok starts first, so it cooks while the knife works.
+    const hot = this.nextPart(missing, (step) => step === 'pot' || step === 'wok');
+    if (hot) return hot;
     const boards = kitchen.ofType('board');
     const toChop = boards.find((cell) => kitchen.canChop(cell));
     if (toChop) return toChop;
@@ -143,7 +146,14 @@ export class AutoChef {
     const bare = this.slots.find((slot) => this.plateOn(slot) === null && slot.cell.item === null && this.ticketOf(slot) !== null);
     if (bare) return nearest(chef, kitchen.ofType('plates'));
 
-    // Start the part that is short, slowest route first.
+    return this.nextPart(missing, () => true);
+  }
+
+  /**
+   * The crate of the part that is short, slowest route first, among parts whose first step passes
+   * `firstStep` and has a free station; null when none is.
+   */
+  nextPart(missing, firstStep) {
     const going = this.inProgress();
     const wanted = new Map();
     for (const entry of missing) wanted.set(entry.id, (wanted.get(entry.id) ?? 0) + 1);
@@ -151,8 +161,8 @@ export class AutoChef {
     for (const id of order) {
       if ((wanted.get(id) ?? 0) <= (going.get(id) ?? 0)) continue;
       const first = INGREDIENTS[id].route[0];
-      if (this.free(first).length === 0) continue;
-      return kitchen.crateOf(id);
+      if (!firstStep(first) || this.free(first).length === 0) continue;
+      return this.night.kitchen.crateOf(id);
     }
     return null;
   }

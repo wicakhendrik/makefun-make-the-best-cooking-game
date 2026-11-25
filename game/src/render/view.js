@@ -3,7 +3,7 @@
 // station highlights, the stall's carved posts at each side and the pass window's plate.
 import { FOOTER_HEIGHT, HUD_HEIGHT, KITCHEN_VIEW, TILE, VIEW } from '../config.js';
 import { RECIPES, recipeForParts } from '../recipes.js';
-import { drawPlate } from './foodArt.js';
+import { drawPart, drawPlate } from './foodArt.js';
 import { drawFooter, drawOrderBoard } from './hud.js';
 import { drawChef, drawHighlight, drawStations, paintKitchenLayer } from './kitchenArt.js';
 
@@ -69,6 +69,47 @@ function drawReadyTag(ctx, x, y, time) {
   ctx.fillText('READY', x, y + lift);
 }
 
+/**
+ * A plate part-way to a dish some ticket wants: which dish, and the parts it still lacks. Null for
+ * anything else, so only real progress toward an order gets a tag.
+ */
+function assemblyOf(night, plate) {
+  if (plate === null || plate.kind !== 'plate' || plate.parts.length === 0) return null;
+  for (const ticket of night.orders.tickets) {
+    const parts = RECIPES[ticket.recipe].parts;
+    if (plate.parts.length < parts.length && plate.parts.every((part) => parts.includes(part))) {
+      return { parts, missing: parts.filter((part) => !plate.parts.includes(part)) };
+    }
+  }
+  return null;
+}
+
+/** A paper tag over a plate mid-assembly: "2/3" and the parts still to add. */
+function drawAssemblyTag(ctx, x, y, assembly) {
+  const done = assembly.parts.length - assembly.missing.length;
+  const width = 40 + assembly.missing.length * 26;
+  ctx.fillStyle = '#fbf3df';
+  ctx.strokeStyle = '#3a2418';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.roundRect(x - width / 2, y - 13, width, 26, 8);
+  ctx.fill();
+  ctx.stroke();
+  ctx.fillStyle = '#c8372d';
+  ctx.font = 'bold 13px "Trebuchet MS", sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(`${done}/${assembly.parts.length}`, x - width / 2 + 18, y + 1);
+  assembly.missing.forEach((part, index) => {
+    const px = x - width / 2 + 46 + index * 26;
+    ctx.fillStyle = 'rgba(58,36,24,0.12)';
+    ctx.beginPath();
+    ctx.arc(px, y, 10.5, 0, Math.PI * 2);
+    ctx.fill();
+    drawPart(ctx, part, px, y, 18);
+  });
+}
+
 function isWanted(night, plate) {
   if (plate === null || plate.kind !== 'plate') return false;
   const recipe = recipeForParts(plate.parts, night.shift.menu);
@@ -111,6 +152,12 @@ export class NightView {
     drawChef(ctx, night.chef, time);
     for (const cell of night.kitchen.stations) {
       if (isWanted(night, cell.item)) drawReadyTag(ctx, cell.col * TILE + 40, cell.row * TILE + 4, time);
+      else {
+        const assembly = assemblyOf(night, cell.item);
+        // Neighbouring tags take turns above and below their plates, so they never overlap.
+        const below = cell.col % 2 === 1;
+        if (assembly !== null) drawAssemblyTag(ctx, cell.col * TILE + 40, cell.row * TILE + (below ? TILE + 2 : 2), assembly);
+      }
     }
     if (isWanted(night, night.chef.held)) drawReadyTag(ctx, night.chef.x, night.chef.y - 72, time);
     effects.draw(ctx);

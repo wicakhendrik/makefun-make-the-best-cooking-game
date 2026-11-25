@@ -1,4 +1,4 @@
-// The screenshot scenes behind ?shot=rush|menu|opening|results. Each plays a real night from its
+// The screenshot scenes behind ?shot=rush|surge|menu|opening|results. Each plays a real night from its
 // seed with the demo chef (which plays by clicking stations, as a mouse player does), finds the
 // busiest moment of the window it looks at, and replays the same seed to exactly that step.
 import { AutoChef } from './autochef.js';
@@ -9,6 +9,9 @@ import { RECIPES, recipeForParts } from './recipes.js';
 const SCENES = {
   rush: { shift: 2, from: 112, to: 172 },
   opening: { shift: 0, from: 28, to: 70 },
+  // The second the lantern rush begins on Festival Crowd (60% of its 180 s, after the 2.4 s
+  // count-in), banner and all.
+  surge: { shift: 1, from: 111.3, to: 112.1 },
   menu: { shift: 1, from: 30, to: 30 },
   results: { shift: 1, from: Infinity, to: Infinity },
 };
@@ -27,15 +30,16 @@ function busyness(night, autochef) {
   }
   const held = night.chef.held;
   if (held !== null && held.kind === 'plate' && recipeForParts(held.parts, night.shift.menu) !== null) ready = true;
-  if (ready) score += 10;
+  // A plate ready to serve is part of every scene; a frame without one never wins.
+  score += ready ? 10 : -30;
   if (night.passShow !== null) score += 1;
   let cooking = 0;
   for (const cell of kitchen.stations) {
     if ((cell.type === 'pot' || cell.type === 'wok') && cell.item !== null && !cell.item.burnt) cooking += 1;
     if (cell.item !== null && cell.item.kind === 'food' && cell.item.burnt) score -= 4;
-    if (cell.type === 'board' && cell.item !== null) score += 1;
+    if (cell.type === 'board' && cell.item !== null) score += 2;
   }
-  score += Math.min(cooking, 3);
+  score += Math.min(cooking, 4) * 3;
   if (night.chef.chopping) score += 2;
   score += Math.min(night.orders.tickets.length, 5) * 0.6;
   const big = night.orders.tickets.filter((ticket) => RECIPES[ticket.recipe].parts.length >= 3).length;

@@ -127,13 +127,25 @@ export function drawCountIn(ctx, night) {
   outlined(ctx, word, VIEW.width / 2, 380, 72 + share * 20, '#ffd36b');
 }
 
-/** A banner across the kitchen as the rush begins. */
+/**
+ * A banner across the kitchen's back aisle as the rush begins, swinging in on a string of
+ * lanterns, so the change of pace reads at a glance without hiding the island.
+ */
 export function drawRushBanner(ctx, share) {
   const alpha = Math.min(1, share * 3, (1 - share) * 3);
+  const y = 250;
   ctx.globalAlpha = alpha;
-  ctx.fillStyle = 'rgba(200,55,45,0.88)';
-  ctx.fillRect(0, 330, VIEW.width, 74);
-  outlined(ctx, 'The lantern rush is on: orders come faster!', VIEW.width / 2, 367, 30, '#fff3d6', '#5a1410');
+  ctx.fillStyle = 'rgba(90,20,16,0.5)';
+  ctx.fillRect(0, y + 6, VIEW.width, 76);
+  ctx.fillStyle = 'rgba(200,55,45,0.94)';
+  ctx.fillRect(0, y, VIEW.width, 76);
+  ctx.fillStyle = '#e3b23c';
+  ctx.fillRect(0, y + 4, VIEW.width, 3);
+  ctx.fillRect(0, y + 69, VIEW.width, 3);
+  outlined(ctx, 'LANTERN RUSH!', VIEW.width / 2, y + 30, 34, '#ffd36b', '#5a1410');
+  outlined(ctx, 'Orders come faster and wait less: keep the woks hot', VIEW.width / 2, y + 58, 17, '#fff3d6', '#5a1410');
+  drawLantern(ctx, 250, y + 38, 22, '#ffc94a', share * 6);
+  drawLantern(ctx, 1030, y + 38, 22, '#ffc94a', share * 6 + 1);
   ctx.globalAlpha = 1;
 }
 
