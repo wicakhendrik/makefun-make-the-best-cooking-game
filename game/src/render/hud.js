@@ -158,7 +158,7 @@ function drawClock(ctx, night, time) {
   ctx.restore();
 }
 
-function drawStar(ctx, x, y, r, filled) {
+function drawStar(ctx, x, y, r, filled, onPaper = false) {
   ctx.beginPath();
   for (let i = 0; i < 10; i += 1) {
     const a = -Math.PI / 2 + (i * Math.PI) / 5;
@@ -166,9 +166,9 @@ function drawStar(ctx, x, y, r, filled) {
     ctx.lineTo(x + Math.cos(a) * radius, y + Math.sin(a) * radius);
   }
   ctx.closePath();
-  ctx.fillStyle = filled ? '#ffd36b' : 'rgba(255,255,255,0.12)';
+  ctx.fillStyle = filled ? '#ffd36b' : onPaper ? 'rgba(120,90,60,0.12)' : 'rgba(255,255,255,0.12)';
   ctx.fill();
-  ctx.strokeStyle = filled ? '#a8741a' : 'rgba(255,255,255,0.3)';
+  ctx.strokeStyle = filled ? '#a8741a' : onPaper ? 'rgba(120,90,60,0.45)' : 'rgba(255,255,255,0.3)';
   ctx.lineWidth = 1.5;
   ctx.stroke();
 }
@@ -209,16 +209,40 @@ export function drawOrderBoard(ctx, night, time) {
   drawTill(ctx, night);
 }
 
-/** The bottom bar: the controls, what the chef holds and the current streak. */
+const STEP_TIPS = {
+  board: 'cut it on a board (hold F, or click the board)',
+  pot: 'boil it in a pot',
+  wok: 'sear it in a wok',
+};
+
+/** A one-line tip for whatever the chef holds: where it goes next. */
+function tipFor(held, night) {
+  if (held === null) return 'WASD / arrows walk  ·  Space or E use  ·  hold F chop  ·  or click any station  ·  Esc pause  ·  M sound';
+  if (held.kind === 'plate') {
+    if (held.parts.length === 0) return 'An empty plate: set it on a counter and add finished parts, or carry it to a pot or wok to plate straight from it.';
+    const wanted = night.orders.tickets.some((ticket) => {
+      const parts = RECIPES[ticket.recipe].parts;
+      return parts.length === held.parts.length && parts.every((part) => held.parts.includes(part));
+    });
+    return wanted ? 'That plate matches a ticket: take it to a SERVE window!' : 'Keep adding parts until the plate matches a ticket, or scrap it in the bin.';
+  }
+  if (held.burnt) return 'Burnt! Scrap it in the bin and start again.';
+  const step = INGREDIENTS[held.id].route[held.stage];
+  if (step === undefined) return `${INGREDIENTS[held.id].done} is ready: put it on a plate.`;
+  const then = INGREDIENTS[held.id].route[held.stage + 1];
+  return `${INGREDIENTS[held.id].name}: ${STEP_TIPS[step]}${then ? `, then ${STEP_TIPS[then].split(' (')[0]}` : ''}.`;
+}
+
+/** The bottom bar: a tip for what the chef holds (or the controls), and the current streak. */
 export function drawFooter(ctx, night) {
   const y = VIEW.height - FOOTER_HEIGHT;
   ctx.fillStyle = '#21182c';
   ctx.fillRect(0, y, VIEW.width, FOOTER_HEIGHT);
   ctx.fillStyle = '#c8372d';
   ctx.fillRect(0, y, VIEW.width, 2);
-  text(ctx, 'WASD / arrows walk  ·  Space or E use  ·  hold F chop  ·  or click any station  ·  Esc pause  ·  M sound', 14, y + 21, 13, '#bfb3d9', 'left', 'normal');
   const held = night.chef.held;
-  text(ctx, `Holding ${describeItem(held)}`, VIEW.width - 160, y + 21, 13, held === null ? '#8c82a6' : '#fff3d6', 'right');
+  text(ctx, tipFor(held, night), 14, y + 21, 13, held === null ? '#bfb3d9' : '#ffe9b0', 'left', held === null ? 'normal' : 'bold');
+  text(ctx, `Holding ${describeItem(held)}`, VIEW.width - 130, y + 21, 13, held === null ? '#8c82a6' : '#fff3d6', 'right', 'normal');
   const streak = night.orders.streak;
   text(ctx, streak > 1 ? `Streak ${streak}` : `Served ${night.orders.served}`, VIEW.width - 14, y + 21, 14, streak > 1 ? '#9df08f' : '#fff3d6', 'right');
 }

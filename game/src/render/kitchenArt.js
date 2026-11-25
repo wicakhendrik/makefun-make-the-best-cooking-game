@@ -314,8 +314,11 @@ function drawBurnWarning(ctx, x, y, time, share) {
   ctx.fillText('!', x, y - 29);
 }
 
-/** Draw what is on every station this frame: food, plates, flames, progress and warnings. */
-export function drawStations(ctx, kitchen, time) {
+/**
+ * Draw what is on every station this frame: food, plates, flames, progress and warnings. The
+ * knife on `choppingAt` (the board the chef works, or null) rises and falls with each cut.
+ */
+export function drawStations(ctx, kitchen, time, choppingAt = null) {
   for (const cell of kitchen.stations) {
     const x = cell.col * TILE;
     const y = cell.row * TILE;
@@ -325,7 +328,7 @@ export function drawStations(ctx, kitchen, time) {
       const spot = itemSpot(cell);
       drawHeldThing(ctx, cell.item, spot.x, spot.y, 50, time);
     }
-    if (cell.type === 'board') drawKnife(ctx, x, y, 0);
+    if (cell.type === 'board') drawKnife(ctx, x - (cell === choppingAt ? 14 : 0), y, cell === choppingAt ? Math.abs(Math.sin(time * 26)) * 12 : 0);
   }
   for (const cell of kitchen.stations) {
     const food = cell.item;
@@ -362,11 +365,15 @@ export function drawHighlight(ctx, cell, strong, time) {
 /** The chef, seen from above and a little in front, with whatever it carries. */
 export function drawChef(ctx, chef, time) {
   const bob = chef.moving ? Math.abs(Math.sin(chef.walkTime * 12)) * 3 : 0;
-  const x = chef.x;
-  const y = chef.y - bob;
   const fx = chef.facing.x;
   const fy = chef.facing.y;
   ctx.save();
+  // Drawn a little larger than its footprint, scaled about its feet.
+  ctx.translate(chef.x, chef.y + 18);
+  ctx.scale(1.15, 1.15);
+  ctx.translate(-chef.x, -chef.y - 18);
+  const x = chef.x;
+  const y = chef.y - bob;
   ctx.fillStyle = 'rgba(0,0,0,0.28)';
   ctx.beginPath();
   ctx.ellipse(chef.x, chef.y + 18, 24, 11, 0, 0, Math.PI * 2);

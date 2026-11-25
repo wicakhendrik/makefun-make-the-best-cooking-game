@@ -80,8 +80,8 @@ export function titleCards() {
 /** The title: logo, the three nights with their menus and best stars, and how to play. */
 export function drawTitle(ctx, time, best, hover) {
   veil(ctx, 0.62);
-  drawLantern(ctx, 300, 92, 30, '#ff6b4a', time);
-  drawLantern(ctx, 980, 92, 30, '#ffc94a', time + 1);
+  drawLantern(ctx, 236, 88, 30, '#ff6b4a', time);
+  drawLantern(ctx, 1044, 88, 30, '#ffc94a', time + 1);
   outlined(ctx, 'Lantern Alley Kitchen', VIEW.width / 2, 86, 64, '#ffd36b');
   text(ctx, 'A night-market cooking game · chop, boil, sear, plate and serve before the lanterns go out', VIEW.width / 2, 142, 18, '#f3e7ff', 'center', 'normal');
   text(ctx, 'Choose a night', VIEW.width / 2, 200, 20, '#ffb36b');
@@ -104,7 +104,7 @@ export function drawTitle(ctx, time, best, hover) {
       drawPlate(ctx, RECIPES[key].parts, dx, dy, 52);
     });
     text(ctx, `${dishes.length} dishes · ${Math.round((shift.length / 60) * 10) / 10} min · stars at ${shift.stars.join(' / ')}¢`, cx, top + 250, 13, '#6b4a33', 'center', 'normal');
-    for (let s = 0; s < 3; s += 1) drawStar(ctx, cx - 34 + s * 34, top + 282, 13, (best[card.index] ?? 0) > s);
+    for (let s = 0; s < 3; s += 1) drawStar(ctx, cx - 34 + s * 34, top + 282, 13, (best[card.index] ?? 0) > s, true);
     text(ctx, `Press ${card.index + 1}`, card.x + card.w - 16, top + 300, 12, '#a08a74', 'right', 'normal');
   }
   const y = 600;
@@ -158,7 +158,7 @@ export function drawResults(ctx, night, time, since) {
   for (let i = 0; i < 3; i += 1) {
     const pop = Math.min(1, Math.max(0, (since - 0.3 - i * 0.35) * 4));
     const scale = i < stars ? 0.6 + pop * 0.4 + (pop < 1 ? Math.sin(pop * Math.PI) * 0.3 : 0) : 1;
-    drawStar(ctx, VIEW.width / 2 - 90 + i * 90, y + 140, 34 * scale, i < stars && pop > 0);
+    drawStar(ctx, VIEW.width / 2 - 90 + i * 90, y + 140, 34 * scale, i < stars && pop > 0, true);
   }
   const lines = [
     ['Dishes served', String(orders.served)],

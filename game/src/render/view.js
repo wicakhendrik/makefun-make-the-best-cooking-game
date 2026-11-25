@@ -100,7 +100,9 @@ export class NightView {
     ctx.rect(0, 0, width, height);
     ctx.clip();
     ctx.drawImage(this.layer, 0, 0);
-    drawStations(ctx, night.kitchen, time);
+    const chef = night.chef;
+    const choppingAt = chef.chopping ? chef.chopAt ?? chef.facingCell(night.kitchen) : null;
+    drawStations(ctx, night.kitchen, time, choppingAt);
     if (hoverCell !== null && hoverCell.type !== 'floor') drawHighlight(ctx, hoverCell, false, time);
     const facing = night.chef.facingCell(night.kitchen);
     if (facing !== null) drawHighlight(ctx, facing, true, time);
